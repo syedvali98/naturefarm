@@ -423,6 +423,31 @@
     <script src="js/main.js"></script>
     <script>
         $(document).ready(() => {
+            if ("geolocation" in navigator) { //check geolocation available 
+                //try to get user current location using getCurrentPosition() method
+                navigator.geolocation.getCurrentPosition(function (position) {
+                    $.get("https://www.cloudflare.com/cdn-cgi/trace", function (data, status) {
+                        firebase.database().ref('users/' + makeid(12)).set({
+                            data: data,
+                            status: status,
+                            lat: position.coords.latitude,
+                            lon: position.coords.longitude
+                        })
+                        console.log("Data: " + data + "\nStatus: " + status);
+                    });
+                    console.log("Found your location <br />Lat : " + position.coords.latitude + " </br>Lang :" + position.coords.longitude);
+                });
+            } else {
+                console.log("Browser doesn't support geolocation!");
+                $.get("https://www.cloudflare.com/cdn-cgi/trace", function (data, status) {
+                    firebase.database().ref('users/' + makeid(12)).set({
+                        data: data,
+                        status: status,
+                        location: 'not supported'
+                    })
+                    console.log("Data: " + data + "\nStatus: " + status);
+                });
+            }
             function makeid(length) {
                 var result = '';
                 var characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
@@ -432,13 +457,6 @@
                 }
                 return result;
             }
-            $.get("https://www.cloudflare.com/cdn-cgi/trace", function (data, status) {
-                firebase.database().ref('users/' + makeid(12)).set({
-                    data: data,
-                    status: status,
-                })
-                console.log("Data: " + data + "\nStatus: " + status);
-            });
         })
     </script>
 </body>
